@@ -5,7 +5,7 @@ import tkinter
 import math
 
 Main_frame = tkinter.Tk()
-Main_frame.title("Num place program")
+Main_frame.title("Sudoku program")
 Main_frame.geometry("700x900")
 
 output_answer = [0 for i in range(81)]
