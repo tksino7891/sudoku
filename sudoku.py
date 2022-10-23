@@ -35,25 +35,23 @@ def get_index_block(block,row,column):
     return get_index(r1 , c1)
 
 def check_available_number():
-    #不可条件探索
+    # Check unable cases
     for k in range(81):
         if solve_status[k] == -1 or solve_status[k] == 1:
             num = output_answer[k]
-            #同じ行に同じ数字を入力できない
             for row in range(9):
                 index = get_index(row,get_column(k))
                 if k != index and solve_status[index] != -1:
                     if can_input_number[index][num-1] == 1:
                         can_input_number[index][num-1] = 0
-
-            #同じ列に同じ数字を入力できない
+            # Check no same number in same line
             for column in range(9):
                 index = get_index(get_row(k),column)
                 if k != index and solve_status[index] != -1:
                     if can_input_number[index][num-1] == 1:
                         can_input_number[index][num-1] = 0
 
-            #同じブロックに同じ数字を入力できない
+            # Check no same number in same block
             for r1 in range(3):
                 for c1 in range(3):
                     index = get_index_block(get_block(k),r1,c1)
@@ -61,7 +59,7 @@ def check_available_number():
                         if can_input_number[index][num-1] == 1:
                             can_input_number[index][num-1] = 0
 
-    #値確定セル数を集計
+    # Summarize determinant sells
     num_solved = 0
     for k in range(81):
         if solve_status[k] != -1:
@@ -79,10 +77,10 @@ def check_available_number():
     return num_solved
 
 def check_limit_cells():
-    #ある数字の入れられる限定セルを探索
+    # Check where a number can be set
     for num in range(9):
 
-        #列方向探索
+        # column direcrtion
         for row in range(9):
             avalable_place = 0
             for column in range(9):
@@ -95,7 +93,7 @@ def check_limit_cells():
                         for n in range(9):
                             can_input_number[index][n] = 0
                         can_input_number[index][num] = 1
-        #行方向探索
+        # row direction
         for column in range(9):
             avalable_place = 0
             for row in range(9):
@@ -108,7 +106,7 @@ def check_limit_cells():
                         for n in range(9):
                             can_input_number[index][n] = 0
                         can_input_number[index][num] = 1
-        #Block内探索
+        # Search in block
         for block in range(9):
             avalable_place = 0
             for row in range(3):
@@ -125,7 +123,7 @@ def check_limit_cells():
                             can_input_number[index][num] = 1
 
 
-    #値確定セル数を集計
+    # Summarize determinant cells
     num_solved = 0
     for k in range(81):
         if solve_status[k] != -1:
@@ -170,18 +168,18 @@ def print_answer(k):
         OutputLabel[k].configure(text = out_put_text, width=5, height=3, fg = "#000000", font = ("Helevetica",8))
 
 def DeleteEntryValue(event):
-    #エントリーの中身を削除
+    # Delete entry
     for k in range(len(InputBox)):
         InputBox[k].delete(0, tkinter.END)
 
 def SolveProblem(event):
-    #値を初期化
+    # Initialize
     for k in range(81):
         output_answer[k] = 0
         solve_status[k] = 9
         for m in range(9):
             can_input_number[k][m] = 1
-    #問題を読み取り
+    # Read problem
     for k in range(len(InputBox)):
         if InputBox[k].get() == "":
             output_answer[k] = 0
@@ -195,7 +193,7 @@ def SolveProblem(event):
                     can_input_number[k][m] = 0
                 can_input_number[k][output_answer[k]-1] = 1
 
-    #問題を解く
+    # Solve probelm
     pre_solved_num=check_available_number()
     for k in range(81):
         check_limit_cells()
@@ -205,14 +203,14 @@ def SolveProblem(event):
         else:
             break
 
-    #解答欄に出力
+    # Print answers
     for k in range(len(InputBox)):
         print_answer(k)
 
-Label01 = tkinter.Label(Main_frame, text = "問題を入力してください。") 
+Label01 = tkinter.Label(Main_frame, text = "Please input problem") 
 Label01.pack(pady = 0)
 
-#入力ボックスの作成-----ここから
+# Create input form-----from here
 Frame01 = tkinter.Frame(Main_frame)
 Frame01.pack(pady = 10)
 Input_frame = []
@@ -226,20 +224,20 @@ for k in range(81):
     InputBox[k].grid(row= get_row(k) , column = get_column(k))
     InputBox[k].insert(tkinter.END,k+1)
     InputBox[k].bind("<FocusOut>",SolveProblem)
-#入力ボックスの作成-----ここまで
+# Create input form---- end here
 
-Button01 = tkinter.Button(Main_frame, text = "値をクリアする") 
+Button01 = tkinter.Button(Main_frame, text = "Clear value") 
 Button01.bind("<Button-1>",DeleteEntryValue)
 Button01.pack(pady = 10)
 
-Button02 = tkinter.Button(Main_frame, text = "問題を解く")
+Button02 = tkinter.Button(Main_frame, text = "solve problem")
 Button02.bind("<Button-1>",SolveProblem)
 Button02.pack(pady = 10)
 
-Label02 = tkinter.Label(Main_frame, text = "解答を出力します。") 
+Label02 = tkinter.Label(Main_frame, text = "Print answer") 
 Label02.pack(pady = 10)
 
-#出力ボックスの作成-----ここから
+# Create show answer form -----from here
 Frame02 = tkinter.Frame(Main_frame)
 Frame02.pack(pady = 10)
 Output_frame = []
@@ -251,7 +249,7 @@ OutputLabel = []
 for k in range(81):
     OutputLabel.append(tkinter.Label(Output_frame[get_block(k)], width=5, height=3, bg = "white", font = ("Helevetica",8)))
     OutputLabel[k].grid(row= get_row(k) , column = get_column(k) , padx = 1 , pady = 1)
-#出力ボックスの作成-----ここまで
+# Create show answer form -----end here
 
 Main_frame.mainloop()
 
