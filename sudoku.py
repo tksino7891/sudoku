@@ -1,9 +1,8 @@
 # coding:utf-8
 import tkinter
-import math
 
 
-if __name__ == '__main__'
+if __name__ == '__main__':
     Main_frame = tkinter.Tk()
     Main_frame.title("Sudoku program")
     Main_frame.geometry("700x900")
