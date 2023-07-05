@@ -4,59 +4,59 @@ import tkinter
 
 class Sudoku:
     def __init__(self):
-        self.Main_frame = tkinter.Tk()
-        self.Main_frame.title("Sudoku program")
-        self.Main_frame.geometry("700x900")
+        self.main_frame = tkinter.Tk()
+        self.main_frame.title("Sudoku program")
+        self.main_frame.geometry("700x900")
 
         self.output_answer = [0 for i in range(81)]
         self.solve_status = [9 for i in range(81)]  # 1-9: posible number to input, -1: applied problem
         self.can_input_number = [[1 for i in range(9)] for j in range(81)]
 
-        self.Label01 = tkinter.Label(self.Main_frame, text = "Please input problem") 
-        self.Label01.pack(pady = 0)
+        self.label01 = tkinter.Label(self.main_frame, text = "Please input problem") 
+        self.label01.pack(pady = 0)
 
         # Create input form-----from here
-        self.Frame01 = tkinter.Frame(self.Main_frame)
-        self.Frame01.pack(pady = 10)
-        self.Input_frame = []
+        self.frame01 = tkinter.Frame(self.main_frame)
+        self.frame01.pack(pady = 10)
+        self.input_frame = []
         for k in range(9):
-            self.Input_frame.append(tkinter.Frame(self.Frame01))
-            self.Input_frame[k].grid(row=int(k/3), column= k-3*int(k/3) , padx = 3 , pady = 3)
+            self.input_frame.append(tkinter.Frame(self.frame01))
+            self.input_frame[k].grid(row=int(k/3), column= k-3*int(k/3) , padx = 3 , pady = 3)
 
-        self.InputBox = []
+        self.input_box = []
         for k in range(81):
-            self.InputBox.append(tkinter.Entry(self.Input_frame[self.get_block(k)], width=3, font = ("Helevetica",16)))
-            self.InputBox[k].grid(row= self.get_row(k) , column = self.get_column(k))
-            self.InputBox[k].insert(tkinter.END,k+1)
-            self.InputBox[k].bind("<FocusOut>", self.SolveProblem)
+            self.input_box.append(tkinter.Entry(self.input_frame[self.get_block(k)], width=3, font = ("Helevetica",16)))
+            self.input_box[k].grid(row= self.get_row(k) , column = self.get_column(k))
+            self.input_box[k].insert(tkinter.END,k+1)
+            self.input_box[k].bind("<FocusOut>", self.SolveProblem)
         # Create input form---- end here
 
-        self.Button01 = tkinter.Button(self.Main_frame, text = "Clear value") 
-        self.Button01.bind("<Button-1>", self.DeleteEntryValue)
-        self.Button01.pack(pady = 10)
+        self.button01 = tkinter.Button(self.main_frame, text = "Clear value") 
+        self.button01.bind("<Button-1>", self.DeleteEntryValue)
+        self.button01.pack(pady = 10)
 
-        self.Button02 = tkinter.Button(self.Main_frame, text = "solve problem")
-        self.Button02.bind("<Button-1>",self.SolveProblem)
-        self.Button02.pack(pady = 10)
+        self.button02 = tkinter.Button(self.main_frame, text = "solve problem")
+        self.button02.bind("<Button-1>",self.SolveProblem)
+        self.button02.pack(pady = 10)
 
-        self.Label02 = tkinter.Label(self.Main_frame, text = "Print answer") 
-        self.Label02.pack(pady = 10)
+        self.label02 = tkinter.Label(self.main_frame, text = "Print answer") 
+        self.label02.pack(pady = 10)
 
         # Create show answer form -----from here
-        self.Frame02 = tkinter.Frame(self.Main_frame)
-        self.Frame02.pack(pady = 10)
-        self.Output_frame = []
+        self.frame02 = tkinter.Frame(self.main_frame)
+        self.frame02.pack(pady = 10)
+        self.output_frame = []
         for k in range(9):
-            self.Output_frame.append(tkinter.Frame(self.Frame02))
-            self.Output_frame[k].grid(row=int(k/3), column= k-3*int(k/3) , padx = 3 , pady = 3)
+            self.output_frame.append(tkinter.Frame(self.frame02))
+            self.output_frame[k].grid(row=int(k/3), column= k-3*int(k/3) , padx = 3 , pady = 3)
 
-        self.OutputLabel = []
+        self.output_label = []
         for k in range(81):
-            self.OutputLabel.append(tkinter.Label(self.Output_frame[self.get_block(k)], width=5, height=3, bg = "white", font = ("Helevetica",8)))
-            self.OutputLabel[k].grid(row= self.get_row(k) , column = self.get_column(k) , padx = 1 , pady = 1)
+            self.output_label.append(tkinter.Label(self.output_frame[self.get_block(k)], width=5, height=3, bg = "white", font = ("Helevetica",8)))
+            self.output_label[k].grid(row= self.get_row(k) , column = self.get_column(k) , padx = 1 , pady = 1)
         # Create show answer form -----end here
 
-        self.Main_frame.mainloop()
+        self.main_frame.mainloop()
 
     def mod(self, a,b):
         return a - int(a/b)*b
@@ -193,15 +193,15 @@ class Sudoku:
             for m in range(9):
                 if self.can_input_number[k][m] == 1:
                     out_put_text = str(m+1)
-            self.OutputLabel[k].configure(text = out_put_text, width=2, height=1, fg = "#0000ff", font = ("Helevetica",22))
+            self.output_label[k].configure(text = out_put_text, width=2, height=1, fg = "#0000ff", font = ("Helevetica",22))
         elif self.solve_status[k] == 1:
             for m in range(9):
                 if self.can_input_number[k][m] == 1:
                     out_put_text = str(m+1)
-            self.OutputLabel[k].configure(text = out_put_text, width=2, height=1, fg = "#000000", font = ("Helevetica",22))
+            self.output_label[k].configure(text = out_put_text, width=2, height=1, fg = "#000000", font = ("Helevetica",22))
         elif self.solve_status[k] == 0:
             out_put_text = "N/A"
-            self.OutputLabel[k].configure(text = out_put_text, width=3, height=1, fg = "#ff0000", font = ("Helevetica",18))
+            self.output_label[k].configure(text = out_put_text, width=3, height=1, fg = "#ff0000", font = ("Helevetica",18))
         else:
             for m in range(9):
                 if self.can_input_number[k][m] == 1:
@@ -211,12 +211,12 @@ class Sudoku:
 
                 if m-int(m/3)*3 == 2:
                     out_put_text = out_put_text + "\n"
-            self.OutputLabel[k].configure(text = out_put_text, width=5, height=3, fg = "#000000", font = ("Helevetica",8))
+            self.output_label[k].configure(text = out_put_text, width=5, height=3, fg = "#000000", font = ("Helevetica",8))
 
     def DeleteEntryValue(self, event):
         # Delete entry
-        for k in range(len(self.InputBox)):
-            self.InputBox[k].delete(0, tkinter.END)
+        for k in range(len(self.input_box)):
+            self.input_box[k].delete(0, tkinter.END)
 
     def SolveProblem(self, event):
         # Initialize
@@ -226,11 +226,11 @@ class Sudoku:
             for m in range(9):
                 self.can_input_number[k][m] = 1
         # Read problem
-        for k in range(len(self.InputBox)):
-            if self.InputBox[k].get() == "":
+        for k in range(len(self.input_box)):
+            if self.input_box[k].get() == "":
                 self.output_answer[k] = 0
             else:
-                self.output_answer[k] = int(self.InputBox[k].get())
+                self.output_answer[k] = int(self.input_box[k].get())
                 if self.output_answer[k] > 9 or self.output_answer[k] < 1:
                     self.output_answer[k] = 0
                 else:
@@ -250,7 +250,7 @@ class Sudoku:
                 break
 
         # Print answers
-        for k in range(len(self.InputBox)):
+        for k in range(len(self.input_box)):
             self.print_answer(k)
 
 
