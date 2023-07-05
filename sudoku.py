@@ -6,7 +6,7 @@ class Sudoku:
     def __init__(self):
         self.main_frame = tkinter.Tk()
         self.main_frame.title("Sudoku program")
-        self.main_frame.geometry("700x900")
+        self.main_frame.geometry("700x1000")
 
         self.output_answer = [0 for i in range(81)]
         self.solve_status = [9 for i in range(81)]  # 1-9: posible number to input, -1: applied problem
@@ -25,7 +25,7 @@ class Sudoku:
 
         self.input_box = []
         for k in range(81):
-            self.input_box.append(tkinter.Entry(self.input_frame[self.get_block(k)], width=3, font = ("Helevetica",16)))
+            self.input_box.append(tkinter.Entry(self.input_frame[self.get_block(k)], width=2, font = ("Helevetica",22)))
             self.input_box[k].grid(row= self.get_row(k) , column = self.get_column(k))
             self.input_box[k].insert(tkinter.END,k+1)
             self.input_box[k].bind("<FocusOut>", self.SolveProblem)
