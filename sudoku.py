@@ -2,22 +2,190 @@
 
 # coding:utf-8
 import tkinter
+from enum import Enum
 
 
-class Sudoku:
-    """Solver for sudoku."""
+class SolveStatus(Enum):
+    NUMBER_GIVEN = 1
+    SOLVED = 2
+    NOT_SOLVED = 3
+    NO_ANSWER = 4
+
+
+def get_row_from_index(index: int) -> int:
+    """Get row number from index."""
+    return int(index / 9)
+
+
+def get_column_from_index(index: int) -> int:
+    """Get column number."""
+    return index - int(index / 9) * 9
+
+
+def get_block_number_from_index(index: int) -> int:
+    """Get block number from index."""
+    row = get_row_from_index(index)
+    column = get_column_from_index(index)
+    return int(row / 3) * 3 + int(column / 3)
+
+
+def get_index_from_row_column(row: int, column: int) -> int:
+    """Get index from row_column."""
+    return row * 9 + column
+
+
+def get_index_from_row_column_in_block(block: int, row: int, column: int) -> int:
+    """Get index from row and column in block."""
+    r1 = int(block / 3) * 3 + row
+    c1 = (block % 3) * 3 + column
+    return get_index_from_row_column(r1, c1)
+
+
+class CellInfo:
+    """Container for cell info."""
+    def __init__(self):
+        self.answer = None
+        self.available_number = [True for item in range(9)]
+        self.solve_status = SolveStatus.NOT_SOLVED.value
+
+
+class SudokuSolver:
+    """Sudoku solver."""
+    def __init__(self):
+        self.cell_info = [CellInfo() for item in range(81)]
+
+    def set_given_number(self, index, number):
+        self.cell_info[index].answer = number
+        self.cell_info[index].solve_status = SolveStatus.NUMBER_GIVEN.value
+
+    def solve(self):
+        self.check_available_number()
+        self.fill_answer_if_only_one_number_available_in_cell()
+        self.fill_answer_if_only_one_location_available_in_row()
+        self.fill_answer_if_only_one_location_available_in_column()
+        self.fill_answer_if_only_one_location_available_in_block()
+        self.check_cell_with_no_answer()
+
+    def check_available_number(self):
+        """Check available number for each cell."""
+        for k in range(81):
+            if self.cell_info[k].answer is not None:
+                number = self.cell_info[k].answer
+                # Set cell in same row not available for this number.
+                row = get_row_from_index(k)
+                for column in range(9):
+                    index = get_index_from_row_column(row, column)
+                    self.cell_info[index].available_number[number - 1] = False
+                # Set cell in same column not available for this number.
+                column = get_column_from_index(k)
+                for row in range(9):
+                    index = get_index_from_row_column(row, column)
+                    self.cell_info[index].available_number[number - 1] = False
+                # Set cell in same block not available for this number.
+                block = get_block_number_from_index(k)
+                for r in range(3):
+                    for c in range(3):
+                        index = get_index_from_row_column_in_block(block, r, c)
+                        self.cell_info[index].available_number[number - 1] = False
+
+    def fill_answer_if_only_one_number_available_in_cell(self):
+        for k in range(81):
+            if self.cell_info[k].solve_status == SolveStatus.NOT_SOLVED.value:
+                count_available_number = 0
+                for i in range(9):
+                    if self.cell_info[k].available_number[i] is True:
+                        count_available_number += 1
+                        possible_answer = i + 1
+                if count_available_number == 1:
+                    self.cell_info[k].answer = possible_answer
+                    self.cell_info[k].solve_status = SolveStatus.SOLVED.value
+
+    def fill_answer_if_only_one_location_available_in_row(self):
+        for number_id in range(9):
+            for row in range(9):
+                num_available_location = 0
+                for column in range(9):
+                    index = get_index_from_row_column(row, column)
+                    if self.cell_info[index].answer == number_id + 1:
+                        # The number checking is already set as result.
+                        num_available_location = None
+                        break
+                    if self.cell_info[index].available_number[number_id] is True:
+                        num_available_location += 1
+                        possible_column_location = column
+                if num_available_location == 0:
+                    print(f"Number {number_id + 1} cannot be located in row {row}.")
+                elif num_available_location == 1:
+                    index = get_index_from_row_column(row, possible_column_location)
+                    self.cell_info[index].answer = number_id + 1
+                    self.cell_info[index].solve_status = SolveStatus.SOLVED.value
+
+    def fill_answer_if_only_one_location_available_in_column(self):
+        for number_id in range(9):
+            for column in range(9):
+                num_available_location = 0
+                for row in range(9):
+                    index = get_index_from_row_column(row, column)
+                    if self.cell_info[index].answer == number_id + 1:
+                        # The number checking is already set as result.
+                        num_available_location = None
+                        break
+                    if self.cell_info[index].available_number[number_id] is True:
+                        num_available_location += 1
+                        possible_row_location = row
+                if num_available_location == 0:
+                    print(f"Number {number_id + 1} cannot be located in column {column}.")
+                elif num_available_location == 1:
+                    index = get_index_from_row_column(possible_row_location, column)
+                    self.cell_info[index].answer = number_id + 1
+                    self.cell_info[index].solve_status = SolveStatus.SOLVED.value
+
+    def fill_answer_if_only_one_location_available_in_block(self):
+        for number_id in range(9):
+            for block in range(9):
+                num_available_location = 0
+                for r in range(3):
+                    if num_available_location is None:
+                        break
+                    for c in range(3):
+                        index = get_index_from_row_column_in_block(block, r, c)
+                        if self.cell_info[index].answer == number_id + 1:
+                            # The number checking is already set as result.
+                            num_available_location = None
+                            break
+                        if self.cell_info[index].available_number[number_id] is True:
+                            num_available_location += 1
+                            possible_r_location = r
+                            possible_c_location = c
+                if num_available_location == 0:
+                    print(f"Number {number_id + 1} cannot be located in block {block}.")
+                elif num_available_location == 1:
+                    index = get_index_from_row_column_in_block(
+                        block, possible_r_location, possible_c_location
+                    )
+                    self.cell_info[index].answer = number_id + 1
+                    self.cell_info[index].solve_status = SolveStatus.SOLVED.value
+
+    def check_cell_with_no_answer(self):
+        for k in range(81):
+            if self.cell_info[k].solve_status not in [SolveStatus.NUMBER_GIVEN.value,
+                                                      SolveStatus.SOLVED.value]:
+                count_available_number = 0
+                for i in range(9):
+                    if self.cell_info[k].available_number[i] is True:
+                        count_available_number += 1
+                if count_available_number == 0:
+                    self.cell_info[k].solve_status = SolveStatus.NO_ANSWER.value
+
+
+class SudokuGui:
+    """GUI for sudoku solver."""
 
     def __init__(self):
         """Setup the class."""
         self.main_frame = tkinter.Tk()
         self.main_frame.title("Sudoku program")
         self.main_frame.geometry("700x1000")
-
-        self.output_answer = [0 for i in range(81)]
-        # 1-9: posible number to input, -1: applied problem
-        self.solve_status = [9 for i in range(81)]
-        self.can_input_number = [[1 for i in range(9)] for j in range(81)]
-
         self.label01 = tkinter.Label(self.main_frame, text="Please input problem")
         self.label01.pack(pady=0)
 
@@ -35,12 +203,12 @@ class Sudoku:
         for k in range(81):
             self.input_box.append(
                 tkinter.Entry(
-                    self.input_frame[self.get_block(k)],
+                    self.input_frame[get_block_number_from_index(k)],
                     width=2,
                     font=("Helevetica", 22),
                 )
             )
-            self.input_box[k].grid(row=self.get_row(k), column=self.get_column(k))
+            self.input_box[k].grid(row=get_row_from_index(k), column=get_column_from_index(k))
             self.input_box[k].insert(tkinter.END, k + 1)
             self.input_box[k].bind("<FocusOut>", self.solve_problem)
         # Create input form---- end here
@@ -70,7 +238,7 @@ class Sudoku:
         for k in range(81):
             self.output_label.append(
                 tkinter.Label(
-                    self.output_frame[self.get_block(k)],
+                    self.output_frame[get_block_number_from_index(k)],
                     width=5,
                     height=3,
                     bg="white",
@@ -78,161 +246,17 @@ class Sudoku:
                 )
             )
             self.output_label[k].grid(
-                row=self.get_row(k), column=self.get_column(k), padx=1, pady=1
+                row=get_row_from_index(k), column=get_column_from_index(k), padx=1, pady=1
             )
         # Create show answer form -----end here
 
         self.main_frame.mainloop()
 
-    def mod(self, a, b):
-        """Mod a of b."""
-        return a - int(a / b) * b
-
-    def get_row(self, k):
-        """Get row number."""
-        return int(k / 9)
-
-    def get_column(self, k):
-        """Get column number."""
-        return k - int(k / 9) * 9
-
-    def get_block(self, k):
-        """Get block unmber."""
-        row = self.get_row(k)
-        column = self.get_column(k)
-        return int(row / 3) * 3 + int(column / 3)
-
-    def get_index(self, row, column):
-        """Get index."""
-        return row * 9 + column
-
-    def get_index_block(self, block, row, column):
-        """Get index, block."""
-        r1 = int(block / 3) * 3 + row
-        c1 = self.mod(block, 3) * 3 + column
-        return self.get_index(r1, c1)
-
-    def check_available_number(self):
-        """Check avalable number."""
-        # Check unable cases
-        for k in range(81):
-            if self.solve_status[k] == -1 or self.solve_status[k] == 1:
-                num = self.output_answer[k]
-                for row in range(9):
-                    index = self.get_index(row, self.get_column(k))
-                    if k != index and self.solve_status[index] != -1:
-                        if self.can_input_number[index][num - 1] == 1:
-                            self.can_input_number[index][num - 1] = 0
-                # Check no same number in same line
-                for column in range(9):
-                    index = self.get_index(self.get_row(k), column)
-                    if k != index and self.solve_status[index] != -1:
-                        if self.can_input_number[index][num - 1] == 1:
-                            self.can_input_number[index][num - 1] = 0
-
-                # Check no same number in same block
-                for r1 in range(3):
-                    for c1 in range(3):
-                        index = self.get_index_block(self.get_block(k), r1, c1)
-                        if k != index and self.solve_status[index] != -1:
-                            if self.can_input_number[index][num - 1] == 1:
-                                self.can_input_number[index][num - 1] = 0
-
-        # Summarize determinant sells
-        num_solved = 0
-        for k in range(81):
-            if self.solve_status[k] != -1:
-                self.solve_status[k] = 0
-                for n in range(9):
-                    if self.can_input_number[k][n] == 1:
-                        self.solve_status[k] = int(self.solve_status[k] + 1)
-                if self.solve_status[k] == 1:
-                    for n in range(9):
-                        if self.can_input_number[k][n] == 1:
-                            self.output_answer[k] = n + 1
-
-            if self.solve_status[k] == -1 or self.solve_status[k] == 1:
-                num_solved = num_solved + 1
-        return num_solved
-
-    def check_limit_cells(self):
-        """Cehck cells limit."""
-        # Check where a number can be set
-        for num in range(9):
-
-            # column direcrtion
-            for row in range(9):
-                avalable_place = 0
-                for column in range(9):
-                    if self.can_input_number[self.get_index(row, column)][num] == 1:
-                        avalable_place = avalable_place + 1
-                if avalable_place == 1:
-                    for column in range(9):
-                        index = self.get_index(row, column)
-                        if self.can_input_number[index][num] == 1 and \
-                                self.solve_status[index] != -1:
-                            for n in range(9):
-                                self.can_input_number[index][n] = 0
-                            self.can_input_number[index][num] = 1
-            # row direction
-            for column in range(9):
-                avalable_place = 0
-                for row in range(9):
-                    if self.can_input_number[self.get_index(row, column)][num] == 1:
-                        avalable_place = avalable_place + 1
-                if avalable_place == 1:
-                    for row in range(9):
-                        index = self.get_index(row, column)
-                        if self.can_input_number[index][num] == 1 and \
-                                self.solve_status[index] != -1:
-                            for n in range(9):
-                                self.can_input_number[index][n] = 0
-                            self.can_input_number[index][num] = 1
-            # Search in block
-            for block in range(9):
-                avalable_place = 0
-                for row in range(3):
-                    for column in range(3):
-                        if (
-                            self.can_input_number[
-                                self.get_index_block(block, row, column)
-                            ][num] == 1
-                        ):
-                            avalable_place = avalable_place + 1
-                if avalable_place == 1:
-                    for row in range(3):
-                        for column in range(3):
-                            index = self.get_index_block(block, row, column)
-                            if self.can_input_number[index][num] == 1 and \
-                                    self.solve_status[index] != -1:
-                                for n in range(9):
-                                    self.can_input_number[index][n] = 0
-                                self.can_input_number[index][num] = 1
-
-        # Summarize determinant cells
-        num_solved = 0
-        for k in range(81):
-            if self.solve_status[k] != -1:
-                self.solve_status[k] = 0
-                for n in range(9):
-                    if self.can_input_number[k][n] == 1:
-                        self.solve_status[k] = int(self.solve_status[k] + 1)
-                if self.solve_status[k] == 1:
-                    for n in range(9):
-                        if self.can_input_number[k][n] == 1:
-                            self.output_answer[k] = n + 1
-
-            if self.solve_status[k] == -1 or self.solve_status[k] == 1:
-                num_solved = num_solved + 1
-        return num_solved
-
-    def print_answer(self, k):
+    def set_answer_text(self, k):
         """Print answer."""
         out_put_text = ""
-        if self.solve_status[k] == -1:
-            for m in range(9):
-                if self.can_input_number[k][m] == 1:
-                    out_put_text = str(m + 1)
+        if self.sudoku_solver.cell_info[k].solve_status == SolveStatus.NUMBER_GIVEN.value:
+            out_put_text = self.sudoku_solver.cell_info[k].answer
             self.output_label[k].configure(
                 text=out_put_text,
                 width=2,
@@ -240,10 +264,8 @@ class Sudoku:
                 fg="#0000ff",
                 font=("Helevetica", 22),
             )
-        elif self.solve_status[k] == 1:
-            for m in range(9):
-                if self.can_input_number[k][m] == 1:
-                    out_put_text = str(m + 1)
+        elif self.sudoku_solver.cell_info[k].solve_status == SolveStatus.SOLVED.value:
+            out_put_text = self.sudoku_solver.cell_info[k].answer
             self.output_label[k].configure(
                 text=out_put_text,
                 width=2,
@@ -251,7 +273,7 @@ class Sudoku:
                 fg="#000000",
                 font=("Helevetica", 22),
             )
-        elif self.solve_status[k] == 0:
+        elif self.sudoku_solver.cell_info[k].solve_status == SolveStatus.NO_ANSWER.value:
             out_put_text = "N/A"
             self.output_label[k].configure(
                 text=out_put_text,
@@ -262,7 +284,7 @@ class Sudoku:
             )
         else:
             for m in range(9):
-                if self.can_input_number[k][m] == 1:
+                if self.sudoku_solver.cell_info[k].available_number[m] is True:
                     out_put_text = out_put_text + str(m + 1) + " "
                 else:
                     out_put_text = out_put_text + "  "
@@ -284,39 +306,25 @@ class Sudoku:
 
     def solve_problem(self, event):
         """Solve problem."""
-        for k in range(81):
-            self.output_answer[k] = 0
-            self.solve_status[k] = 9
-            for m in range(9):
-                self.can_input_number[k][m] = 1
+        self.sudoku_solver = SudokuSolver()
         # Read problem
         for k in range(len(self.input_box)):
             if self.input_box[k].get() == "":
-                self.output_answer[k] = 0
+                pass
             else:
-                self.output_answer[k] = int(self.input_box[k].get())
-                if self.output_answer[k] > 9 or self.output_answer[k] < 1:
-                    self.output_answer[k] = 0
+                read_number = int(self.input_box[k].get())
+                if read_number > 9 or read_number < 1:
+                    pass
                 else:
-                    self.solve_status[k] = -1
-                    for m in range(9):
-                        self.can_input_number[k][m] = 0
-                    self.can_input_number[k][self.output_answer[k] - 1] = 1
+                    self.sudoku_solver.set_given_number(k, read_number)
 
-        # Solve probelm
-        pre_solved_num = self.check_available_number()
-        for k in range(81):
-            self.check_limit_cells()
-            solved_num = self.check_available_number()
-            if pre_solved_num != solved_num:
-                pre_solved_num = solved_num
-            else:
-                break
+        # Solve problem
+        self.sudoku_solver.solve()
 
         # Print answers
         for k in range(len(self.input_box)):
-            self.print_answer(k)
+            self.set_answer_text(k)
 
 
 if __name__ == "__main__":
-    Sudoku()
+    SudokuGui()
