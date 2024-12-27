@@ -93,7 +93,7 @@ class SudokuSolver:
             if self.cell_info[k].solve_status == SolveStatus.NOT_SOLVED.value:
                 count_available_number = 0
                 for i in range(9):
-                    if self.cell_info[k].available_number[i]==True:
+                    if self.cell_info[k].available_number[i] is True:
                         count_available_number += 1
                         possible_answer = i + 1
                 if count_available_number == 1:
@@ -110,12 +110,12 @@ class SudokuSolver:
                         # The number checking is already set as result.
                         num_available_location = None
                         break
-                    if self.cell_info[index].available_number[number_id]==True:
+                    if self.cell_info[index].available_number[number_id] is True:
                         num_available_location += 1
                         possible_column_location = column
-                if num_available_location==0:
+                if num_available_location == 0:
                     print(f"Number {number_id + 1} cannot be located in row {row}.")
-                elif num_available_location==1:
+                elif num_available_location == 1:
                     index = get_index_from_row_column(row, possible_column_location)
                     self.cell_info[index].answer = number_id + 1
                     self.cell_info[index].solve_status = SolveStatus.SOLVED.value
@@ -130,12 +130,12 @@ class SudokuSolver:
                         # The number checking is already set as result.
                         num_available_location = None
                         break
-                    if self.cell_info[index].available_number[number_id]==True:
+                    if self.cell_info[index].available_number[number_id] is True:
                         num_available_location += 1
                         possible_row_location = row
-                if num_available_location==0:
+                if num_available_location == 0:
                     print(f"Number {number_id + 1} cannot be located in column {column}.")
-                elif num_available_location==1:
+                elif num_available_location == 1:
                     index = get_index_from_row_column(possible_row_location, column)
                     self.cell_info[index].answer = number_id + 1
                     self.cell_info[index].solve_status = SolveStatus.SOLVED.value
@@ -153,23 +153,24 @@ class SudokuSolver:
                             # The number checking is already set as result.
                             num_available_location = None
                             break
-                        if self.cell_info[index].available_number[number_id]==True:
+                        if self.cell_info[index].available_number[number_id] is True:
                             num_available_location += 1
                             possible_r_location = r
                             possible_c_location = c
-                if num_available_location==0:
+                if num_available_location == 0:
                     print(f"Number {number_id + 1} cannot be located in block {block}.")
-                elif num_available_location==1:
+                elif num_available_location == 1:
                     index = get_index_from_row_column_in_block(block, possible_r_location, possible_c_location)
                     self.cell_info[index].answer = number_id + 1
                     self.cell_info[index].solve_status = SolveStatus.SOLVED.value
 
     def check_cell_with_no_answer(self):
         for k in range(81):
-            if self.cell_info[k].solve_status not in [SolveStatus.NUMBER_GIVEN.value, SolveStatus.SOLVED.value]:
+            if self.cell_info[k].solve_status not in [SolveStatus.NUMBER_GIVEN.value,
+                                                      SolveStatus.SOLVED.value]:
                 count_available_number = 0
                 for i in range(9):
-                    if self.cell_info[k].available_number[i]==True:
+                    if self.cell_info[k].available_number[i] is True:
                         count_available_number += 1
                 if count_available_number == 0:
                     self.cell_info[k].solve_status = SolveStatus.NO_ANSWER.value
@@ -249,7 +250,6 @@ class SudokuGui:
 
         self.main_frame.mainloop()
 
-
     def set_answer_text(self, k):
         """Print answer."""
         out_put_text = ""
@@ -282,7 +282,7 @@ class SudokuGui:
             )
         else:
             for m in range(9):
-                if self.sudoku_solver.cell_info[k].available_number[m] == True:
+                if self.sudoku_solver.cell_info[k].available_number[m] is True:
                     out_put_text = out_put_text + str(m + 1) + " "
                 else:
                     out_put_text = out_put_text + "  "
