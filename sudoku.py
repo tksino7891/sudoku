@@ -160,7 +160,9 @@ class SudokuSolver:
                 if num_available_location == 0:
                     print(f"Number {number_id + 1} cannot be located in block {block}.")
                 elif num_available_location == 1:
-                    index = get_index_from_row_column_in_block(block, possible_r_location, possible_c_location)
+                    index = get_index_from_row_column_in_block(
+                        block, possible_r_location, possible_c_location
+                    )
                     self.cell_info[index].answer = number_id + 1
                     self.cell_info[index].solve_status = SolveStatus.SOLVED.value
 
